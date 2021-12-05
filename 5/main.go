@@ -20,10 +20,10 @@ func main()  {
 	}
 
 	dirList := strings.Split(string(input), "\n")
-	dirs := createOrderedDirs(dirList, false)
+	dirs := createOrderedDirs(dirList, true) // update for step two
 	//fmt.Println(dirs)
 	overLaps := countOverlaps(dirs)
-	fmt.Println(overLaps)
+	//fmt.Println(overLaps)
 
 	counter := 0
 	for _, count := range overLaps {
@@ -62,7 +62,16 @@ func buildDir(dir string) line {
 	}
 
 	res := line{}
-	if tempCoords[0].x == tempCoords[1].x {
+	if tempCoords[0].x != tempCoords[1].x && tempCoords[0].y != tempCoords[1].y {
+		// handle diags
+		if tempCoords[0].x < tempCoords[1].x {
+			res.start = tempCoords[0]
+			res.end = tempCoords[1]
+		} else {
+			res.start = tempCoords[1]
+			res.end = tempCoords[0]
+		}
+	} else if tempCoords[0].x == tempCoords[1].x {
 		if tempCoords[0].y > tempCoords[1].y {
 			res.start = tempCoords[1]
 			res.end = tempCoords[0]
@@ -70,7 +79,7 @@ func buildDir(dir string) line {
 			res.start = tempCoords[0]
 			res.end = tempCoords[1]
 		}
-	} else if tempCoords[0].y == tempCoords[1].y {
+	} else {
 		if tempCoords[0].x > tempCoords[1].x {
 			res.start = tempCoords[1]
 			res.end = tempCoords[0]
@@ -78,8 +87,6 @@ func buildDir(dir string) line {
 			res.start = tempCoords[0]
 			res.end = tempCoords[1]
 		}
-	} else {
-		// TODO: decide how to organize diagonals
 	}
 	return res
 }
@@ -106,23 +113,39 @@ func countOverlaps(dirs []line) count {
 	overlaps := count{}
 
 	for _, line := range dirs {
-		start := line.start.x
-		end := line.end.x
-		cons := line.start.y
-		isX := true
-		if start == end {
-			start = line.start.y
-			end = line.end.y
-			cons = line.start.x
-			isX = false
-		}
-		for i := start; i <= end; i++ {
-			strI := strconv.FormatInt(int64(i), 10)
-			strCons := strconv.FormatInt(int64(cons), 10)
-			if isX {
-				overlaps[strI + "," + strCons] += 1
-			} else {
-				overlaps[strCons + "," + strI] += 1
+		// handle diags
+		if line.start.x != line.end.x && line.start.y != line.end.y {
+			// x always increments, so we need to check the direction of y
+			difY := line.end.y - line.start.y
+			stepY := 1
+			if difY < 0 {
+				stepY = -1
+			}
+			for i, j := line.start.x, line.start.y; i <= line.end.x; i, j = i + 1, j + stepY {
+				strI := strconv.FormatInt(int64(i), 10)
+				strJ := strconv.FormatInt(int64(j), 10)
+				overlaps[strI + "," + strJ] += 1
+			}
+
+		} else {
+			start := line.start.x
+			end := line.end.x
+			cons := line.start.y
+			isX := true
+			if start == end {
+				start = line.start.y
+				end = line.end.y
+				cons = line.start.x
+				isX = false
+			}
+			for i := start; i <= end; i++ {
+				strI := strconv.FormatInt(int64(i), 10)
+				strCons := strconv.FormatInt(int64(cons), 10)
+				if isX {
+					overlaps[strI + "," + strCons] += 1
+				} else {
+					overlaps[strCons + "," + strI] += 1
+				}
 			}
 		}
 	}
