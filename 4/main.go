@@ -29,8 +29,19 @@ func main()  {
 		boardStructs = append(boardStructs, buildBoardMap(board))
 	}
 	fmt.Printf("%+v\n  %d", boardStructs[0], len(boardStructs[0].Nums))
+	type winners struct {
+		Board BoardMap
+		Rem int
+		CurrNum int
+		Prod int
+	}
+	winingBoards := map[int]winners{}
+	lastKey := -1
 	for _, drawnNum := range drawnNums {
-		for _, bStruct := range boardStructs {
+		for key, bStruct := range boardStructs {
+			if _, ok := winingBoards[key]; ok {
+				continue
+			}
 			checkAndAdd(bStruct, drawnNum)
 			bingo := checkBingo(bStruct, drawnNum)
 			delete(bStruct.Nums, drawnNum)
@@ -40,11 +51,21 @@ func main()  {
 				if err != nil {
 					panic("Failed to convert drawn num")
 				}
-				fmt.Printf("Result\nRems: %v\nCurrNum: %v\nProd: %v\nBoard: %+v", rems, drawnNums, rems * currNum, bStruct)
-				return
+				fmt.Printf("Result\nRems: %v\nCurrNum: %v\nProd: %v\nBoard: %+v\n\n", rems, drawnNums, rems * currNum, bStruct)
+				//return // ignore for second step
+				winingBoards[key] = winners{
+					Board: bStruct,
+					Rem: rems,
+					CurrNum: currNum,
+					Prod: rems * currNum,
+				}
+				lastKey = key
 			}
 		}
 	}
+
+	fmt.Printf("Last Board: %+v\n", winingBoards[lastKey])
+
 }
 
 func buildBoards(list []string) [][][]string {
@@ -108,7 +129,7 @@ func checkAndAdd(board BoardMap, num string) {
 func checkBingo(board BoardMap, num string) bool {
 	if board.Nums[num] != nil {
 		coords := board.Nums[num]
-		if board.Rows[coords[0]] > 4 || board.Cols[coords[1]] > 4 {
+		if board.Rows[coords[0]] == 5 || board.Cols[coords[1]] == 5 {
 			return true
 		}
 	}
