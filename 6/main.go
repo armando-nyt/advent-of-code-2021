@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+type fishCount map[int]int
+
 func main()  {
 	if len(os.Args) < 2 {
 		fmt.Println("Provide input file")
@@ -21,10 +23,39 @@ func main()  {
 	fList := createFishList(string(input))
 
 	fmt.Println(fList)
-	for i:= 0; i < 256; i++ {
-		fList = calculateNewFish(fList)
+	//for i:= 0; i < 256; i++ {
+	//	fList = calculateNewFish(fList)
+	//}
+	fCount := make([]int, 9)
+	for _, f := range fList {
+		//if _, ok := fCount[f.day]; !ok {
+		//	fCount[f.day] = 0
+		//}
+		fCount[f.day] += 1
 	}
-	fmt.Println("Result", len(fList))
+	fmt.Printf("InitialCount: %v\n", fCount)
+
+	for i:= 0; i < 256; i++ {
+		tempCount := make([]int, 9)
+		sixOverFlow := 0
+		for day := 0; day <= 8; day++ {
+			if day == 0 {
+				tempCount[8] = fCount[day]
+				sixOverFlow = fCount[day]
+			} else {
+				tempCount[day - 1] = fCount[day]
+			}
+		}
+		tempCount[6] += sixOverFlow
+		//fmt.Println(tempCount)
+		fCount = tempCount
+	}
+
+	tot := 0
+	for _, c := range fCount {
+		tot += c
+	}
+	fmt.Println(fCount, tot)
 }
 
 type fish struct {
