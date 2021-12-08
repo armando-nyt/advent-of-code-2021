@@ -100,10 +100,8 @@ func min(a int, b int) int {
 
 func calcExpense(n int) int {
 	tot := 0
-	cost := 0
 	for i := 1; i <= n; i++ {
-		tot += i + cost
-		cost += 1
+		tot += i
 	}
 	return tot
 }
